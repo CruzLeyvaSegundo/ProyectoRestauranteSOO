@@ -6,25 +6,29 @@
 package Clases;
 
 import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Conexion {
     
-   private Connection cnx = null;
-   
-   public Connection obtener() throws SQLException, ClassNotFoundException {
-      if (cnx == null) {
-         try {
+    private Connection cnx;
+
+    public Conexion(){
+        try {
             Class.forName("com.mysql.jdbc.Driver");
-            cnx = DriverManager.getConnection("jdbc:mysql://localhost:3306/repechaje", "root", "");
-         } catch (SQLException e) {
-             System.out.println("Error Conexion BD"+e.getMessage());
-         } 
-      }
-      return cnx;
-   }
-   public void cerrar() throws SQLException {
-      if (cnx != null) {
-         cnx.close();
-      }
-   }
+            this.cnx = DriverManager.getConnection("jdbc:mysql://localhost:3306/repechaje", "root", "1234");
+        } catch (ClassNotFoundException | SQLException ex) {
+            Logger.getLogger(Conexion.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    public Connection getConnect(){
+        return cnx;
+    }
+    
+    public void cerrar() throws SQLException {
+        if (cnx != null) {
+            cnx.close();
+        }
+    }
 }

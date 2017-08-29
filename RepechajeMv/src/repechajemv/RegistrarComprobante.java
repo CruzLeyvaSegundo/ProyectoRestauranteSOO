@@ -5,10 +5,26 @@
  */
 package repechajemv;
 
-import Clases.Conexion;
+
+import Clases.DetallePedido;
+import Clases.Mesa;
+import Clases.Pedido;
+import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
 
 /**
  *
@@ -21,15 +37,17 @@ public class RegistrarComprobante extends javax.swing.JFrame {
      */
     
     Calendar c = new GregorianCalendar();
-    Conexion cn;
+    Connection cnx;
+    Pedido p;
+    int tipoComprobante = -1; // 1 es boleta y 2 es factura
+    Mesa mesaPedido;
     
-    public RegistrarComprobante(Conexion cn) {
+    public RegistrarComprobante(Connection cn) {
         initComponents();
         this.setTitle("Registrar Comprobante");
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        this.cn = cn;
-        fecha();
+        this.cnx = cnx;
     }
     
     public void fecha(){
@@ -68,7 +86,7 @@ public class RegistrarComprobante extends javax.swing.JFrame {
         txtTotal = new javax.swing.JTextField();
         bConsultarPedido = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+        idMesa = new javax.swing.JTextField();
         bCancelar = new javax.swing.JButton();
         bGuardar = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
@@ -99,7 +117,22 @@ public class RegistrarComprobante extends javax.swing.JFrame {
             new String [] {
                 "Código", "Descripción", "C/U", "Cantidad", "SubTotal"
             }
-        ));
+        ) {
+            Class[] types = new Class [] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Float.class, java.lang.Integer.class, java.lang.Float.class
+            };
+            boolean[] canEdit = new boolean [] {
+                true, true, true, false, true
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
         jScrollPane1.setViewportView(tbDetalle);
 
         jLabel4.setText("IGV:");
@@ -107,10 +140,20 @@ public class RegistrarComprobante extends javax.swing.JFrame {
         jLabel5.setText("Total:");
 
         bConsultarPedido.setText("Consultar Pedido");
+        bConsultarPedido.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bConsultarPedidoActionPerformed(evt);
+            }
+        });
 
         jLabel6.setText("Número de Mesa: ");
 
-        jTextField1.setText("0");
+        idMesa.setText("1");
+        idMesa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                idMesaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -161,7 +204,7 @@ public class RegistrarComprobante extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtDireccion, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(idMesa, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(bConsultarPedido)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -192,7 +235,7 @@ public class RegistrarComprobante extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(bConsultarPedido)
                     .addComponent(jLabel6)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(idMesa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -281,18 +324,118 @@ public class RegistrarComprobante extends javax.swing.JFrame {
         // TODO add your handling code here:
         lbDNI_RUC.setText("DNI:");
         lbNombre_RS.setText("Nombre:");
+        tipoComprobante = 1;
+        System.out.println("selecciono boleta");
     }//GEN-LAST:event_miBoletaActionPerformed
 
     private void miFacturaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miFacturaActionPerformed
         // TODO add your handling code here:
         lbDNI_RUC.setText("RUC:");
         lbNombre_RS.setText("Razón Social:");
+        tipoComprobante = 2;
+        System.out.println("selecciono factura");
     }//GEN-LAST:event_miFacturaActionPerformed
 
     private void bCancelarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bCancelarActionPerformed
         // TODO add your handling code here:
         this.dispose();
     }//GEN-LAST:event_bCancelarActionPerformed
+    
+    public void llenarTabla(ArrayList<String> codigos,ArrayList<String> descripciones,
+            ArrayList<Float> costo, ArrayList<Integer> cantidad){
+        
+        String[] columnas = new String[]{"Código","Descripción","C/U","Cantidad",
+            "Subtotal"};
+        
+        final Class[] tiposColumnas = new Class[]{
+            java.lang.String.class,
+            java.lang.String.class,
+            java.lang.Float.class,
+            java.lang.Integer.class,
+            java.lang.Float.class 
+        };
+        /*       
+        Object[][] datos = new Object[][]{
+            {"code", "En", "Descripcion", new JButton("Consultar Receta"),"10"},
+            {"code", "A", "Descripcion", new JButton("Consultar Receta"),"10"},
+            {"code", "Ex", "Descripcion", new JButton("Consultar Receta"),"10"}
+        };*/        
+        Object[][] datos = new Object[codigos.size()][5];
+       
+        for(int i = 0;i< codigos.size();i++){
+            
+            datos[i][0] = codigos.get(i);
+            datos[i][1] = descripciones.get(i);
+            datos[i][2] = costo.get(i);
+            datos[i][3] = cantidad.get(i);
+            datos[i][4] = costo.get(i)* cantidad.get(i);
+        }
+
+        tbDetalle.setModel(new javax.swing.table.DefaultTableModel(datos,columnas ){
+            // Esta variable nos permite conocer de antemano los tipos de datos de cada columna, dentro del TableModel
+            Class[] tipos = tiposColumnas;
+
+            @Override
+            public Class getColumnClass(int columnIndex) {
+                // Este método es invocado por el CellRenderer para saber que dibujar en la celda,
+                // observen que estamos retornando la clase que definimos de antemano.
+                return tipos[columnIndex];
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // Sobrescribimos este método para evitar que la columna que contiene los botones sea editada.
+                return !(this.getColumnClass(column).equals(JButton.class));
+            }
+        });
+        
+        tbDetalle.setDefaultRenderer(JButton.class, new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable jtable, Object objeto, boolean estaSeleccionado, boolean tieneElFoco, int fila, int columna) {
+                /**
+                 * Observen que todo lo que hacemos en éste método es retornar el objeto que se va a dibujar en la 
+                 * celda. Esto significa que se dibujará en la celda el objeto que devuelva el TableModel. También 
+                 * significa que este renderer nos permitiría dibujar cualquier objeto gráfico en la grilla, pues 
+                 * retorna el objeto tal y como lo recibe.
+                 */
+                return (Component) objeto;
+            }
+        });
+      
+        
+    }
+    private void bConsultarPedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bConsultarPedidoActionPerformed
+ 
+        ArrayList<String> codigos = new ArrayList();
+        ArrayList<String> descripciones = new ArrayList();
+        ArrayList<Float> costos = new ArrayList();
+        ArrayList<Integer> cantidad = new ArrayList();
+        
+        p = new Pedido(cnx);
+        p.ObtenerDatos(idMesa.getText());
+        
+        DetallePedido oP = new DetallePedido(cnx);
+        System.out.println(p.getIdPedido());
+        ResultSet rs = oP.obtenerDetalle(p.getIdPedido());
+         
+        try {
+            while(rs.next()){
+                System.out.println("hola"+rs.getString(1));
+                codigos.add(rs.getString(1));
+                descripciones.add(rs.getString(2));
+                costos.add(Float.parseFloat(rs.getString(3)));
+                cantidad.add(Integer.parseInt(rs.getString(4)));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(ActualizarPedido.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        llenarTabla(codigos, descripciones, costos, cantidad);
+
+    }//GEN-LAST:event_bConsultarPedidoActionPerformed
+
+    private void idMesaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_idMesaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_idMesaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -334,6 +477,7 @@ public class RegistrarComprobante extends javax.swing.JFrame {
     private javax.swing.JButton bCancelar;
     private javax.swing.JButton bConsultarPedido;
     private javax.swing.JButton bGuardar;
+    private javax.swing.JTextField idMesa;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -344,7 +488,6 @@ public class RegistrarComprobante extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel lbDNI_RUC;
     private javax.swing.JLabel lbFecha;
     private javax.swing.JLabel lbNombre_RS;

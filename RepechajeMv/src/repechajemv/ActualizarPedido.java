@@ -130,7 +130,12 @@ public class ActualizarPedido extends javax.swing.JFrame {
             }
         });
 
-        txtNroMesa.setText("0");
+        txtNroMesa.setText("1");
+        txtNroMesa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtNroMesaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pActualizarPedidoLayout = new javax.swing.GroupLayout(pActualizarPedido);
         pActualizarPedido.setLayout(pActualizarPedidoLayout);
@@ -367,6 +372,10 @@ public class ActualizarPedido extends javax.swing.JFrame {
         SeleccionarItem sI = new SeleccionarItem(cnx,this);
         sI.setVisible(true);
     }//GEN-LAST:event_bAgregarItemActionPerformed
+
+    private void txtNroMesaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtNroMesaActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtNroMesaActionPerformed
 
     /**
      * @param args the command line arguments

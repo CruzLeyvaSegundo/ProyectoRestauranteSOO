@@ -54,6 +54,7 @@ public class RegistrarPedido extends javax.swing.JFrame {
         lbNroMesa.setText(nro);
     }
     
+    //Este metodo se debe mejorar
     public void consultarReceta(String nombre){
         
         Item i = new Item(cnx);
@@ -64,6 +65,7 @@ public class RegistrarPedido extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(null,r.getDescripcion(), nombre, JOptionPane.INFORMATION_MESSAGE);
     }
     
+    //Este metodo  esta bien
     public void llenarTabla(ArrayList<String> codigos,ArrayList<String> tipos,
             ArrayList<String> descripciones, ArrayList<String> cantidad){
         
@@ -76,16 +78,9 @@ public class RegistrarPedido extends javax.swing.JFrame {
             java.lang.String.class,
             JButton.class,
             java.lang.Object.class 
-        };
-        /*       
-        Object[][] datos = new Object[][]{
-            {"code", "En", "Descripcion", new JButton("Consultar Receta"),"10"},
-            {"code", "A", "Descripcion", new JButton("Consultar Receta"),"10"},
-            {"code", "Ex", "Descripcion", new JButton("Consultar Receta"),"10"}
-        };*/        
+        };   
         Object[][] datos = new Object[codigos.size()][5];
        
-        
         for(int i = 0;i< codigos.size();i++){
             
             datos[i][0] = codigos.get(i);
@@ -144,18 +139,7 @@ public class RegistrarPedido extends javax.swing.JFrame {
                 }
             }
         });
-        
-        
-        /*JButton boton = new JButton("Consultar Receta");
-        boton.setSize(100,45);
-        boton.setVisible(true);
-        ActionListener listener = new ActionListener(){ 
-           public void actionPerformed(ActionEvent e) { 
-             consultarReceta(descripcion); //lo declaras en otra parte del documento
-           }         
-        };
-        boton.addActionListener(listener);*/
-        
+
     }
     
     public void fecha(){
@@ -359,22 +343,9 @@ public class RegistrarPedido extends javax.swing.JFrame {
         sM.setVisible(true);
     }//GEN-LAST:event_miSeleccionarMesaActionPerformed
 
+   //Debemos implementar el metodo guardar desde cero
     private void bGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bGuardarActionPerformed
-        try {
-            // TODO add your handling code here:
-            int idP = (int) (Math.random()*10000+1);
-            Pedido p = new Pedido(idP,lbFecha.getText(), 0,Integer.valueOf(lbNroMesa.getText()), cnx);
-            p.almacenarPedido();
-            
-            for(int i=0;i<tbDetalle.getRowCount();i++){
-                DetallePedido dP = new DetallePedido(Integer.valueOf(String.valueOf(tbDetalle.getValueAt(i, 0))), 
-                        idP, String.valueOf(tbDetalle.getValueAt(i, 4)), cnx);
-                dP.almacenarDetalle();
-            }
-            
-        } catch (SQLException ex) {
-            Logger.getLogger(RegistrarPedido.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
         
     }//GEN-LAST:event_bGuardarActionPerformed
 
